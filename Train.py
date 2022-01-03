@@ -74,6 +74,7 @@ class Constructor:
 
         path = os.path.abspath(os.curdir)
         self.model.load_state_dict(torch.load(path + '\\' + self.model_name + '.pth', map_location='cpu'))
+        self.model.to("cpu")
 
         predicted_value = []
         ground_label = []

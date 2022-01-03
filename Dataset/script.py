@@ -80,11 +80,19 @@ class SampleReader:
 
         return completed_shape
 
-    def get_histone(self, Test=False):
-        histone = pd.read_csv(self.histone_path + 'Train_ATF2.csv', header=None, index_col=None, skiprows=lambda x: x % 9 == 0)
+    def get_histone(self, cell, Test=False):
+
+        if Test is False:
+            histone = pd.read_csv(self.histone_path + 'Train_' + cell + '.csv', header=None, index_col=None,
+                                  skiprows=lambda x: x % 9 == 0)
+        else:
+            histone = pd.read_csv(self.histone_path + 'Test_' + cell + '.csv', header=None, index_col=None,
+                                  skiprows=lambda x: x % 9 == 0)
+
         histone = histone.iloc[:, 1:]
         num = histone.shape[0] // 8
         histone = np.array(np.split(histone.values, num))
+
         return histone
 
 
@@ -97,10 +105,15 @@ class SSDataset_690(Dataset):
 
         self.completed_seqs, self.completed_labels = sample_reader.get_seq(Test=Test)
         self.completed_shape = sample_reader.get_shape(shapes=shapes, Test=Test)
-        self.completed_histone = sample_reader.get_histone()
+        # self.completed_histone = sample_reader.get_histone()
 
     def __getitem__(self, item):
-        return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
+        return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
+            item]
+        # return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
 
     def __len__(self):
         return self.completed_seqs.shape[0]
+#
+# d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
+# print(d.completed_seqs)
