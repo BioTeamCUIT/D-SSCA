@@ -45,13 +45,7 @@ class SampleReader:
         else:
             # row_seq = pd.read_csv(self.seq_path + 'Test_seq.csv', sep=' ', header=None)
             row_seq = pd.read_csv(self.seq_path + 'Test_seq.csv', sep=',', header=None)
-        # print(row_seq)
         middle = math.ceil(len(row_seq.loc[0, 1]) / 2)
-        # print(middle)
-        # test = row_seq.iloc[:, 1:2].values.tolist()
-        # print(test)
-        # # row_seq.iloc[:, 1:2] = row_seq.iloc[:, 1:2][:, middle-50:middle+50]
-        # # print(row_seq)
         seq_num = row_seq.shape[0]
         seq_len = len(row_seq.loc[0, 1])
 
@@ -59,7 +53,6 @@ class SampleReader:
         completed_seqs = np.empty(shape=(seq_num, 101, 4))
         completed_labels = np.empty(shape=(seq_num, 1))
         for i in range(seq_num):
-            # print(row_seq.loc[i, 1][middle-50:middle+50])
             completed_seqs[i] = one_hot(row_seq.loc[i, 1][middle-50:middle+50+1])
             completed_labels[i] = row_seq.loc[i, 2]
         completed_seqs = np.transpose(completed_seqs, [0, 2, 1])
@@ -92,7 +85,6 @@ class SampleReader:
                 # 注意，这里把索引那一行读进去了
                 completed_shape[m][i] = shape_samples.iloc[m, middle-50:middle+50+1]
         completed_shape = np.nan_to_num(completed_shape)
-        # print(completed_shape)
 
         return completed_shape
 
@@ -124,16 +116,12 @@ class SSDataset_690(Dataset):
         self.completed_histone = sample_reader.get_histone()
 
     def __getitem__(self, item):
-        # return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
-        #     item]
-        # get 101bp
-        # middel = math.ceil(len(self.completed_seqs) / 2)
-        # print(middel)
-        # self.completed_seqs = self.completed_seqs[:, :, middel-50:middel+50]
-        return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
+        return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
+            item]
+        # return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
 
     def __len__(self):
         return self.completed_seqs.shape[0]
 
-d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
-print(d.completed_shape.shape)
+# d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
+# print(d.completed_shape.shape)
