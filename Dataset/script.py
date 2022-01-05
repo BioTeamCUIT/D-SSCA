@@ -1,3 +1,4 @@
+import math
 import os
 import pandas as pd
 import numpy as np
@@ -39,17 +40,27 @@ class SampleReader:
     def get_seq(self, Test=False):
 
         if Test is False:
-            row_seq = pd.read_csv(self.seq_path + 'Train_seq.csv', sep=' ', header=None)
+            # row_seq = pd.read_csv(self.seq_path + 'Train_seq.csv', sep=' ', header=None)
+            row_seq = pd.read_csv(self.seq_path + 'Train_seq.csv', sep=',', header=None)
         else:
-            row_seq = pd.read_csv(self.seq_path + 'Test_seq.csv', sep=' ', header=None)
-
+            # row_seq = pd.read_csv(self.seq_path + 'Test_seq.csv', sep=' ', header=None)
+            row_seq = pd.read_csv(self.seq_path + 'Test_seq.csv', sep=',', header=None)
+        # print(row_seq)
+        middle = math.ceil(len(row_seq.loc[0, 1]) / 2)
+        # print(middle)
+        # test = row_seq.iloc[:, 1:2].values.tolist()
+        # print(test)
+        # # row_seq.iloc[:, 1:2] = row_seq.iloc[:, 1:2][:, middle-50:middle+50]
+        # # print(row_seq)
         seq_num = row_seq.shape[0]
         seq_len = len(row_seq.loc[0, 1])
 
-        completed_seqs = np.empty(shape=(seq_num, seq_len, 4))
+        # completed_seqs = np.empty(shape=(seq_num, seq_len, 4))
+        completed_seqs = np.empty(shape=(seq_num, 101, 4))
         completed_labels = np.empty(shape=(seq_num, 1))
         for i in range(seq_num):
-            completed_seqs[i] = one_hot(row_seq.loc[i, 1])
+            # print(row_seq.loc[i, 1][middle-50:middle+50])
+            completed_seqs[i] = one_hot(row_seq.loc[i, 1][middle-50:middle+50+1])
             completed_labels[i] = row_seq.loc[i, 2]
         completed_seqs = np.transpose(completed_seqs, [0, 2, 1])
 
@@ -61,32 +72,37 @@ class SampleReader:
 
         if Test is False:
             for shape in shapes:
-                shape_series.append(pd.read_csv(self.shape_path + 'Train' + '_' + shape + '.csv'))
+                shape_series.append(pd.read_csv(self.shape_path + 'Train' + '_' + shape + '.csv', header=None))
         else:
             for shape in shapes:
-                shape_series.append(pd.read_csv(self.shape_path + 'Test' + '_' + shape + '.csv'))
+                shape_series.append(pd.read_csv(self.shape_path + 'Test' + '_' + shape + '.csv', header=None))
 
         """
             seq_num = shape_series[0].shape[0]
             seq_len = shape_series[0].shape[1]
         """
-        completed_shape = np.empty(shape=(shape_series[0].shape[0], len(shapes), shape_series[0].shape[1]))
+        shape_len = shape_series[0].shape[1]
+        middle = math.ceil(shape_len / 2)
+        # completed_shape = np.empty(shape=(shape_series[0].shape[0], len(shapes), shape_series[0].shape[1]))
+        completed_shape = np.empty(shape=(shape_series[0].shape[0], len(shapes), 101))
 
         for i in range(len(shapes)):
             shape_samples = shape_series[i]
             for m in range(shape_samples.shape[1]):
-                completed_shape[m][i] = shape_samples.loc[m]
+                # 注意，这里把索引那一行读进去了
+                completed_shape[m][i] = shape_samples.iloc[m, middle-50:middle+50+1]
         completed_shape = np.nan_to_num(completed_shape)
+        # print(completed_shape)
 
         return completed_shape
 
-    def get_histone(self, cell, Test=False):
+    def get_histone(self, Test=False):
 
         if Test is False:
-            histone = pd.read_csv(self.histone_path + 'Train_' + cell + '.csv', header=None, index_col=None,
+            histone = pd.read_csv(self.histone_path + 'Train_his' + '.csv', header=None, index_col=None,
                                   skiprows=lambda x: x % 9 == 0)
         else:
-            histone = pd.read_csv(self.histone_path + 'Test_' + cell + '.csv', header=None, index_col=None,
+            histone = pd.read_csv(self.histone_path + 'Test_his' + '.csv', header=None, index_col=None,
                                   skiprows=lambda x: x % 9 == 0)
 
         histone = histone.iloc[:, 1:]
@@ -105,15 +121,19 @@ class SSDataset_690(Dataset):
 
         self.completed_seqs, self.completed_labels = sample_reader.get_seq(Test=Test)
         self.completed_shape = sample_reader.get_shape(shapes=shapes, Test=Test)
-        # self.completed_histone = sample_reader.get_histone()
+        self.completed_histone = sample_reader.get_histone()
 
     def __getitem__(self, item):
-        return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
-            item]
-        # return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
+        # return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
+        #     item]
+        # get 101bp
+        # middel = math.ceil(len(self.completed_seqs) / 2)
+        # print(middel)
+        # self.completed_seqs = self.completed_seqs[:, :, middel-50:middel+50]
+        return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
 
     def __len__(self):
         return self.completed_seqs.shape[0]
-#
-# d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
-# print(d.completed_seqs)
+
+d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
+print(d.completed_shape.shape)

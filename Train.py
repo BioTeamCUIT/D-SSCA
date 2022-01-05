@@ -104,6 +104,7 @@ class Constructor:
     def run(self, samples_file_name, ratio=0.8):
 
         Train_Validate_Set = SSDataset_690(samples_file_name, False)
+        # 101
 
         """divide Train samples and Validate samples"""
         Train_Set, Validate_Set = random_split(dataset=Train_Validate_Set,
@@ -112,22 +113,23 @@ class Constructor:
                                                         math.ceil(len(Train_Validate_Set) * ratio)],
                                                generator=torch.Generator().manual_seed(0))
 
-        TrainLoader = loader.DataLoader(dataset=Train_Set, drop_last=True,
-                                        batch_size=self.batch_size, shuffle=True, num_workers=0)
-        ValidateLoader = loader.DataLoader(dataset=Validate_Set, drop_last=True,
-                                           batch_size=self.batch_size, shuffle=False, num_workers=0)
-
-        TestLoader = loader.DataLoader(dataset=SSDataset_690(samples_file_name, True),
-                                       batch_size=1, shuffle=False, num_workers=0)
-
-        self.learn(TrainLoader, ValidateLoader)
-        predicted_value, ground_label = self.inference(TestLoader)
-
-        accuracy, roc_auc, pr_auc = self.measure(predicted_value, ground_label)
-
-        print('\n---Finish Run---\n')
-
-        return accuracy, roc_auc, pr_auc
+        # TrainLoader = loader.DataLoader(dataset=Train_Set, drop_last=True,
+        #                                 batch_size=self.batch_size, shuffle=True, num_workers=0)
+        # ValidateLoader = loader.DataLoader(dataset=Validate_Set, drop_last=True,
+        #                                    batch_size=self.batch_size, shuffle=False, num_workers=0)
+        #
+        # 101
+        # TestLoader = loader.DataLoader(dataset=SSDataset_690(samples_file_name, True),
+        #                                batch_size=1, shuffle=False, num_workers=0)
+        #
+        # self.learn(TrainLoader, ValidateLoader)
+        # predicted_value, ground_label = self.inference(TestLoader)
+        #
+        # accuracy, roc_auc, pr_auc = self.measure(predicted_value, ground_label)
+        #
+        # print('\n---Finish Run---\n')
+        #
+        # return accuracy, roc_auc, pr_auc
 
 
 from models.D_SSCA import d_ssca
