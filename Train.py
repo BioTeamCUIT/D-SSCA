@@ -104,6 +104,7 @@ class Constructor:
     def run(self, samples_file_name, ratio=0.8):
 
         Train_Validate_Set = SSDataset_690(samples_file_name, False)
+        # print(Train_Validate_Set.completed_histone.shape)
         # 101
 
         """divide Train samples and Validate samples"""
@@ -136,4 +137,4 @@ from models.D_SSCA import d_ssca
 
 Train = Constructor(model=d_ssca())
 
-Train.run(samples_file_name='wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
+Train.run(samples_file_name='D:\MRJOHN\BHSITE\data\Gm12878\ATF2')

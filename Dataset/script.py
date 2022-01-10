@@ -33,9 +33,12 @@ class SampleReader:
             file_path:
                 wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk
         """
-        self.seq_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '\\' + file_name + '\\Sequence\\'
-        self.shape_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '\\' + file_name + '\\Shape\\'
-        self.histone_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '\\' + file_name + '\\Histone\\'
+        # self.seq_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '\\' + file_name + '\\Sequence\\'
+        # self.shape_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '\\' + file_name + '\\Shape\\'
+        # self.histone_path = os.path.abspath(os.path.dirname(os.path.realpath(__file__))) + '\\' + file_name + '\\Histone\\'
+        self.seq_path = file_name + '\\Sequence\\'
+        self.shape_path = file_name + '\\Shape\\'
+        self.histone_path = file_name + '\\Histone\\'
 
     def get_seq(self, Test=False):
 
@@ -99,9 +102,19 @@ class SampleReader:
 
         histone = histone.iloc[:, 1:]
         num = histone.shape[0] // 8
-        histone = np.array(np.split(histone.values, num))
+        histone = histone.values.tolist()
+        all_histone = []
+        temp = []
+        for index, item in enumerate(histone):
+            if index % 8 == 0:
+                all_histone.append(temp)
+                temp = []
+            else:
+                temp.append(item)
+        # histone = np.split(histone.values, num)
+        # histone = np.array(np.split(histone.values, num))
 
-        return histone
+        return all_histone
 
 
 class SSDataset_690(Dataset):
@@ -116,12 +129,13 @@ class SSDataset_690(Dataset):
         self.completed_histone = sample_reader.get_histone()
 
     def __getitem__(self, item):
-        return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
-            item]
+        # return self.completed_seqs[item], self.completed_shape[item],  self.completed_labels[
+        #     item]
         # return self.completed_seqs[item], self.completed_shape[item], self.completed_histone, self.completed_labels[item]
+        return self.completed_seqs[item], self.completed_histone, self.completed_labels[item]
 
     def __len__(self):
         return self.completed_seqs.shape[0]
 
-# d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
-# print(d.completed_shape.shape)
+d = SSDataset_690('wgEncodeAwgTfbsBroadDnd41Ezh239875UniPk')
+print(d.completed_histone)
